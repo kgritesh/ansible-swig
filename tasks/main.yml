@@ -1,24 +1,20 @@
 ---
 - name: (Debian) install deps
   when: ansible_os_family == 'Debian'
-  package: name={{item}} state=present
-  with_items:
-    - libpcre3
-    - libpcre3-dev
-    - g++
+  package: name='{{item}}' state=present
+  with_items: '{{swig_dependencies_debian}}'
+
+
 
 - name: (RedHat) install deps
   when: ansible_os_family == 'RedHat'
-  package: name={{item}} state=present
-  with_items:
-    - pcre
-    - pcre-devel
-    - gcc-c++
-    
+  package: name='{{item}}' state=present
+  with_items: '{{swig_dependencies_redhat}}'
+
 - name: download tgz...
   get_url: >-
-    url={{swig_tgz_url}}
-    dest=/tmp/{{swig_tgz}}
+    url='{{swig_tgz_url}}'
+    dest='{{tmp_dir}}{{swig_tgz}}'
     owner=root
     group=root
     mode=0644
@@ -27,11 +23,11 @@
 - name: unarchive src...
   unarchive: >-
     copy=no
-    src=/tmp/{{swig_tgz}}
+    src='{{tmp_dir}}{{swig_tgz}}'
     dest=/opt
     owner=root
     group=root
-    creates={{swig_dir}}
+    creates='{{swig_dir}}'
 
 - name: building...
   with_items:
@@ -41,5 +37,8 @@
   command: '{{item}}'
   args:
     chdir: '{{swig_dir}}'
+
+- name: Delete downloaded swig tar
+  file: path='{{tmp_dir}}{{swig_tgz}}' state='absent'
 
     
